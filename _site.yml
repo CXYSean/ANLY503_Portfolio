@@ -4,6 +4,18 @@ navbar:
   left:
     - text: "Home"
       href: index.html
-    - text: "About"
-      href: about.html
+    - text: "Project"
+      href: project.html
+    - text: "Homeworks"
+      menu:
+        - text: "HW4"
+          href: HW4.html
+        - text: "HW5"
+          href: HW5.html
+        - text: "HW6"
+          href: HW6.html
+        - text: "HW7"
+          href: HW7.html
+
+      
 output_dir: "docs"
