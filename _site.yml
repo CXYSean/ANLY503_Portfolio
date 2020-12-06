@@ -1,6 +1,6 @@
 name: "my-website"
 navbar:
-  title: "My Website"
+  title: "Data Visualization Portfolio"
   left:
     - text: "Home"
       href: index.html
@@ -11,7 +11,17 @@ navbar:
         - text: "HW4"
           href: HW4.html
         - text: "HW5"
-          href: HW5.html
+          menu:
+            - text: "task1"
+              href: task1.html
+            - text: "task2"
+              href: task2.html
+            - text: "task3"
+              href: task3.html
+            - text: "task4"
+              href: task4.html
+            - text: "task5"
+              href: task5.html 
         - text: "HW6"
           href: HW6.html
         - text: "HW7"
@@ -19,3 +29,6 @@ navbar:
 
       
 output_dir: "docs"
+output:
+  html_document:
+      theme: cosmo

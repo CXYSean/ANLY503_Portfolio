@@ -1,9 +1,21 @@
 ---
-title: "My Website"
+title: "Data Visualization Xiyu Chen"
 ---
 
-Hello, Website!
+Hello!
 
-For more information about simple R Markdown websites, please read the documentation at https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html.
+I am Xiyu Chen currently a sceond year Master of Data Science student at Georgetown University. I am seeking for a full time job in data scientist right now. 
 
-Please also note that simple R Markdown sites are _not_ based on **blogdown**. They are probably good for websites with only a few Rmd documents. For larger-scale and more sophisticated websites (such as blogs), you may want to use **blogdown** instead: https://github.com/rstudio/blogdown.
+This is my website of my data visualization works. So this website mainly consists the work I did on drawing graphs in R. I am also interested in other areas of data science. 
+
+This website mainly contains my course works. You can go through my project that is about soccer around the world and tweets of the soccer clubs. Also, my homeworks, those contain a wide range of graphs, geospatial, networks and a lot.
+
+If you are interested in my other works, you can go to my github. I am interested in a lot of things from Unity small games, reinforcement learning, deep learning to NLP.
+
+Space game: https://cxysean.github.io/SpaceV1/ it may take a while to load.
+
+Deep learning: https://github.com/CXYSean/ANLY590
+
+Tetris: coming soon...
+
+NLP:

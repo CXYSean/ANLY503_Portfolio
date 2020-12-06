@@ -15,7 +15,7 @@
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -267,7 +267,7 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">My Website</a>
+      <a class="navbar-brand" href="index.html">Data Visualization Portfolio</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -287,8 +287,25 @@ $(document).ready(function () {
     <li>
       <a href="HW4.html">HW4</a>
     </li>
-    <li>
-      <a href="HW5.html">HW5</a>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">HW5</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="task1.html">task1</a>
+        </li>
+        <li>
+          <a href="task2.html">task2</a>
+        </li>
+        <li>
+          <a href="task3.html">task3</a>
+        </li>
+        <li>
+          <a href="task4.html">task4</a>
+        </li>
+        <li>
+          <a href="task5.html">task5</a>
+        </li>
+      </ul>
     </li>
     <li>
       <a href="HW6.html">HW6</a>
@@ -315,25 +332,108 @@ $(document).ready(function () {
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
-</div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="HW4_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
-</div>
+<p>Clean Customer data.</p>
+<pre class="r"><code>accounts = read_csv(&quot;./data/accounts.csv&quot;)
+cards = read_csv(&quot;./data/cards.csv&quot;)
+clients = read_csv(&quot;./data/clients.csv&quot;)
+loans = read_csv(&quot;loans_r.csv&quot;)
+districts = read_csv(&quot;district_r.csv&quot;)
+links = read_csv(&quot;./data/links.csv&quot;)
+payments = read_csv(&quot;./data/payment_orders.csv&quot;)
+transactions = read_csv(&quot;./data/transactions.csv&quot;)
+
+df = data.frame(&quot;account_id&quot;=accounts$id,
+                &quot;district_id&quot;=accounts$district_id,
+                &#39;open_date&#39;=accounts$date,
+                &#39;statement_frequency&#39;=accounts$statement_frequency)
+df[&#39;district_name&#39;] = apply(df[&#39;district_id&#39;],1,function(x) as.character(districts[districts$id==x,&quot;name&quot;]))
+drops = c(&quot;district_id&quot;)
+
+df[&#39;num_of_customers&#39;] = apply(df[&#39;account_id&#39;],1,function(x) nrow(links[links$account_id==x,]))
+
+links[&quot;num_of_cards&quot;] = apply(links[&quot;client_id&quot;],1,function(x) nrow(cards[cards$link_id==x,]))
+df[&#39;credit_cards&#39;] = apply(df[&#39;account_id&#39;],1,function(x) sum(links[links[&quot;account_id&quot;]==x,&quot;num_of_cards&quot;]))
+
+df[&#39;loan&#39;] = apply(df[&#39;account_id&#39;],1,function(x) nrow(loans[loans[&#39;account_id&#39;]==x,])!=0)
+df = merge(df,loans,by.x =&quot;account_id&quot;,by.y = &quot;account_id&quot;,all.x = TRUE)
+
+drops = c(drops,c(&quot;id&quot;,&quot;date&quot;))
+
+df[&#39;loan_default&#39;] = apply(df[&#39;status&#39;], 1, function(x) x==&quot;B&quot; || x==&quot;D&quot;)
+df = df %&gt;% 
+      rename(
+        loan_amount = amount,
+        loan_payments = payments,
+        loan_term = term,
+        loan_status = status
+      )
+
+df &lt;- df %&gt;% 
+  select(-district_id, -id, -date) 
+
+df[&#39;max_withdrawal&#39;] = apply(df[&#39;account_id&#39;], 1, function(x) max(transactions[transactions[&#39;account_id&#39;]==x,&quot;amount&quot;]))
+
+df[&#39;min_withdrawal&#39;] = apply(df[&#39;account_id&#39;], 1, function(x) min(transactions[transactions[&#39;account_id&#39;]==x,&quot;amount&quot;]))
+
+transactions.credit = transactions[transactions[&#39;type&#39;]==&#39;credit&#39;,]
+df[&#39;cc_payments&#39;] = apply(df[&#39;account_id&#39;], 1, function(x) nrow(transactions.credit[transactions.credit[&#39;account_id&#39;]==x,]))
+
+df[&#39;max_balance&#39;] = apply(df[&#39;account_id&#39;], 1, function(x) max(transactions[transactions[&#39;account_id&#39;]==x,&quot;balance&quot;]))
+
+df[&#39;min_balance&#39;] = apply(df[&#39;account_id&#39;], 1, function(x) min(transactions[transactions[&#39;account_id&#39;]==x,&quot;balance&quot;]))
+write_csv(df,&quot;customer_r.csv&quot;)</code></pre>
+<p>Clean districts data</p>
+<pre class="r"><code>districts = read.csv(&quot;./data/districts.csv&quot;)
+head(districts)
+districts[&#39;municipality_info&#39;] = apply(districts[&#39;municipality_info&#39;], 2, function(x) substr(x,2,nchar(x)-1))
+districts[&#39;unemployment_rate&#39;] = apply(districts[&#39;unemployment_rate&#39;], 2, function(x) substr(x,2,nchar(x)-1))
+districts[&#39;commited_crimes&#39;] = apply(districts[&#39;commited_crimes&#39;], 2, function(x) substr(x,2,nchar(x)-1))
+cleaned &lt;- districts %&gt;% 
+  separate(municipality_info, # the field to split
+           into = c(&quot;pop499&quot;,&quot;pop1999&quot;,&#39;pop9999&#39;,&#39;pop10000&#39;),
+           # the names of the new columns
+           sep = &quot;,&quot; # the separator
+  )
+
+cleaned &lt;- cleaned %&gt;% 
+  separate(commited_crimes, # the field to split
+           into = c(&quot;commited_crimes_95&quot;,&quot;commited_crimes_96&quot;),
+           # the names of the new columns
+           sep = &quot;,&quot; # the separator
+  )
+
+cleaned &lt;- cleaned %&gt;% 
+  separate(unemployment_rate, # the field to split
+           into = c(&quot;unemployment_rate_95&quot;,&quot;unemployment_rate_96&quot;),
+           # the names of the new columns
+           sep = &quot;,&quot; # the separator
+  )
+
+new_cols = c(&quot;pop499&quot;,&quot;pop1999&quot;,&#39;pop9999&#39;,&#39;pop10000&#39;,&quot;commited_crimes_95&quot;,&quot;commited_crimes_96&quot;,&quot;unemployment_rate_95&quot;,&quot;unemployment_rate_96&quot;)
+cleaned[new_cols] = apply(cleaned[new_cols],2,as.integer)
+write_csv(cleaned,&quot;district_r.csv&quot;)</code></pre>
+<p>Clean Loans data.</p>
+<pre class="r"><code>loans = read.csv(&quot;./data/loans.csv&quot;)
+head(loans)
+cols = colnames(loans)
+term_status = cols[6:25]
+loan_term = c()
+loan_status = c()
+#get the status and term
+for(row in 1:nrow(loans)){
+  for(col in term_status){
+    if(loans[row, col] == &quot;X&quot;){
+      loan_term = c(loan_term, as.integer(substring(col,2,3)))
+      loan_status = c(loan_status, substring(col,5,5))
+      break
+    }
+  }
+}
+loans$term = loan_term
+loans$status = loan_status
+#drop the unnecessary columns
+loans = loans[, !(names(loans) %in% term_status)]
+write_csv(loans,&quot;loans_r.csv&quot;)</code></pre>
 
 
 

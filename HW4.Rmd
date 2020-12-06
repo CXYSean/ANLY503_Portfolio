@@ -3,25 +3,118 @@ title: "HW4"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = T)
 ```
 
-## R Markdown
+Clean Customer data.
+```{r, eval = FALSE}
+accounts = read_csv("./data/accounts.csv")
+cards = read_csv("./data/cards.csv")
+clients = read_csv("./data/clients.csv")
+loans = read_csv("loans_r.csv")
+districts = read_csv("district_r.csv")
+links = read_csv("./data/links.csv")
+payments = read_csv("./data/payment_orders.csv")
+transactions = read_csv("./data/transactions.csv")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+df = data.frame("account_id"=accounts$id,
+                "district_id"=accounts$district_id,
+                'open_date'=accounts$date,
+                'statement_frequency'=accounts$statement_frequency)
+df['district_name'] = apply(df['district_id'],1,function(x) as.character(districts[districts$id==x,"name"]))
+drops = c("district_id")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+df['num_of_customers'] = apply(df['account_id'],1,function(x) nrow(links[links$account_id==x,]))
 
-```{r cars}
-summary(cars)
+links["num_of_cards"] = apply(links["client_id"],1,function(x) nrow(cards[cards$link_id==x,]))
+df['credit_cards'] = apply(df['account_id'],1,function(x) sum(links[links["account_id"]==x,"num_of_cards"]))
+
+df['loan'] = apply(df['account_id'],1,function(x) nrow(loans[loans['account_id']==x,])!=0)
+df = merge(df,loans,by.x ="account_id",by.y = "account_id",all.x = TRUE)
+
+drops = c(drops,c("id","date"))
+
+df['loan_default'] = apply(df['status'], 1, function(x) x=="B" || x=="D")
+df = df %>% 
+      rename(
+        loan_amount = amount,
+        loan_payments = payments,
+        loan_term = term,
+        loan_status = status
+      )
+
+df <- df %>% 
+  select(-district_id, -id, -date) 
+
+df['max_withdrawal'] = apply(df['account_id'], 1, function(x) max(transactions[transactions['account_id']==x,"amount"]))
+
+df['min_withdrawal'] = apply(df['account_id'], 1, function(x) min(transactions[transactions['account_id']==x,"amount"]))
+
+transactions.credit = transactions[transactions['type']=='credit',]
+df['cc_payments'] = apply(df['account_id'], 1, function(x) nrow(transactions.credit[transactions.credit['account_id']==x,]))
+
+df['max_balance'] = apply(df['account_id'], 1, function(x) max(transactions[transactions['account_id']==x,"balance"]))
+
+df['min_balance'] = apply(df['account_id'], 1, function(x) min(transactions[transactions['account_id']==x,"balance"]))
+write_csv(df,"customer_r.csv")
 ```
 
-## Including Plots
+Clean districts data
+```{r, eval = FALSE}
+districts = read.csv("./data/districts.csv")
+head(districts)
+districts['municipality_info'] = apply(districts['municipality_info'], 2, function(x) substr(x,2,nchar(x)-1))
+districts['unemployment_rate'] = apply(districts['unemployment_rate'], 2, function(x) substr(x,2,nchar(x)-1))
+districts['commited_crimes'] = apply(districts['commited_crimes'], 2, function(x) substr(x,2,nchar(x)-1))
+cleaned <- districts %>% 
+  separate(municipality_info, # the field to split
+           into = c("pop499","pop1999",'pop9999','pop10000'),
+           # the names of the new columns
+           sep = "," # the separator
+  )
 
-You can also embed plots, for example:
+cleaned <- cleaned %>% 
+  separate(commited_crimes, # the field to split
+           into = c("commited_crimes_95","commited_crimes_96"),
+           # the names of the new columns
+           sep = "," # the separator
+  )
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+cleaned <- cleaned %>% 
+  separate(unemployment_rate, # the field to split
+           into = c("unemployment_rate_95","unemployment_rate_96"),
+           # the names of the new columns
+           sep = "," # the separator
+  )
+
+new_cols = c("pop499","pop1999",'pop9999','pop10000',"commited_crimes_95","commited_crimes_96","unemployment_rate_95","unemployment_rate_96")
+cleaned[new_cols] = apply(cleaned[new_cols],2,as.integer)
+write_csv(cleaned,"district_r.csv")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Clean Loans data.
+```{r, eval = FALSE}
+loans = read.csv("./data/loans.csv")
+head(loans)
+cols = colnames(loans)
+term_status = cols[6:25]
+loan_term = c()
+loan_status = c()
+#get the status and term
+for(row in 1:nrow(loans)){
+  for(col in term_status){
+    if(loans[row, col] == "X"){
+      loan_term = c(loan_term, as.integer(substring(col,2,3)))
+      loan_status = c(loan_status, substring(col,5,5))
+      break
+    }
+  }
+}
+loans$term = loan_term
+loans$status = loan_status
+#drop the unnecessary columns
+loans = loans[, !(names(loans) %in% term_status)]
+write_csv(loans,"loans_r.csv")
+```
+
+
