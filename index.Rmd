@@ -17,5 +17,3 @@ Space game: https://cxysean.github.io/SpaceV1/ it may take a while to load.
 Deep learning: https://github.com/CXYSean/ANLY590
 
 Tetris: coming soon...
-
-NLP:

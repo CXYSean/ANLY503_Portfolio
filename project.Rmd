@@ -4,6 +4,8 @@ output:
   flexdashboard::flex_dashboard:
     social: menu
     orientation: rows
+    navbar:
+      - { icon: "fa-home", href: "https://cxysean.github.io/ANLY503_Portfolio/", align: right }
 ---
 
 <style>                     
@@ -203,7 +205,7 @@ Analysis {.storyboard}
 =========================================
 
 
-### Top 100 versus betwenn countries
+### Top 200 versus betwenn countries
 
 ```{r, fig.width=20, fig.height=20}
 # library(tidyverse)
@@ -252,6 +254,7 @@ Analysis {.storyboard}
 # library(ggraph)
 # fig <- graph_versus %>%
 #   ggraph(layout = 'kk') +
+#   ggtitle("Top 200 Versus")+
 #   geom_node_text(aes(label = label), size = 3) +
 #   geom_edge_diagonal(aes(color = date), alpha = 0.8, arrow = arrow(length = unit(2, 'mm')))
 # fig
